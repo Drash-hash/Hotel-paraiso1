@@ -3,8 +3,8 @@ const cors = require("cors");
 const helmet = require("helmet");
  
 const pool = require("./config/db");
- 
-const authRoutes = require("./modules/auth/auth.routes");
+
+const authRoutes = require("./auth/auth.routes");
  
 const app = express();
  
