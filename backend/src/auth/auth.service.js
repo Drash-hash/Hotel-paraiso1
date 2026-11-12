@@ -54,4 +54,24 @@ async function iniciarSesion(datos) {
   };
 }
  
-module.exports = { registrar, iniciarSesion };
+async function obtenerUsuarioActual(id) {
+  const usuario = await repository.buscarPorId(id);
+ 
+  if (!usuario || !usuario.activo) {
+    throw errorConEstado("Usuario no encontrado o inactivo", 403);
+  }
+ 
+  return {
+    id: usuario.id,
+    nombre: usuario.nombre,
+    correo: usuario.correo,
+    telefono: usuario.telefono,
+    rol: usuario.rol
+  };
+}
+ 
+module.exports = {
+  registrar,
+  iniciarSesion,
+  obtenerUsuarioActual
+};
