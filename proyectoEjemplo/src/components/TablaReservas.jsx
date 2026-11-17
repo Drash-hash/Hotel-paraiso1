@@ -6,6 +6,8 @@ import { createRoot } from "react-dom/client"
 import { obtenerClientePorId, obtenerClientes } from "../utils/clientesStorage"
 import { generarCodigoReserva } from "../utils/reservasStorage"
 import { formatearPrecioHabitacion, obtenerHabitaciones } from "../utils/habitacionesStorage"
+import { obtenerPerfilAPI } from "../services/authService"
+
 const reservasIniciales = [
     {
         id: 1,
@@ -78,26 +80,33 @@ function TablaReservas({ clienteId, esAdmin = false }) {
             clientes={clientes}
             habitaciones={habitaciones}
             reservas={reservas}
-            guardar={(datos) => {
+            guardar={ async (datos) => {
                 if (!esAdmin) {
                     try {
-                        const cliente = obtenerClientePorId(clienteId)
-                        if (!cliente || cliente.activo === false) {
-                            Swal.fire({
-                                icon: "warning",
-                                title: "Cuenta inactiva",
-                                text: "No puedes realizar reservas con una cuenta inactiva. Contacta al hotel para recibir ayuda.",
-                                confirmButtonColor: "#344c5c"
-                            })
+                        const sesion = JSON.parse(
+                            sessionStorage.getItem("sesionHotel") || "null"
+                        );
+
+                        if(!sesion?.token) {
+
+                            throw new Error("Debes iniciar sesion nuevamente") 
+                        }
+
+                        const cliente = await obtenerPerfilAPI(sesion.token)
+                        if (cliente.rol !== "cliente" || cliente.activo === false || cliente.activo === 0) {
+                            await Swal.fire(
+                                "Cuenta no disponible",
+                                "No puedes realizar reservas con una cuenta inactiva. Contacta al hotel para recibir ayuda.",
+                                "warning"
+                            );
                             return
                         }
                     } catch (error) {
-                        Swal.fire({
-                            icon: "error",
-                            title: "No se pudo validar la cuenta",
-                            text: error.message || "Intenta nuevamente más tarde.",
-                            confirmButtonColor: "#344c5c"
-                        })
+                        await Swal.fire(
+                            "Error",
+                            error.message || "Intenta nuevamente más tarde.",
+                            "error"
+                        )
                         return
                     }
                 }

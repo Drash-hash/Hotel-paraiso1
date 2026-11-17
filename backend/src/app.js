@@ -3,8 +3,10 @@ const cors = require("cors");
 const helmet = require("helmet");
  
 const pool = require("./config/db");
-
+ 
+// cambio
 const authRoutes = require("./auth/auth.routes");
+const habitacionesRoutes = require("./habitaciones/habitaciones.routes");
  
 const app = express();
  
@@ -17,6 +19,7 @@ app.use(cors({
 app.use(express.json());
  
 app.use("/api/auth", authRoutes);
+app.use("/api/habitaciones", habitacionesRoutes);
  
 app.get("/api", (req, res) =>{
     res.status(200).json({
