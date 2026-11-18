@@ -6,8 +6,8 @@ import { createRoot } from "react-dom/client"
 import { obtenerClientePorId, obtenerClientes } from "../utils/clientesStorage"
 import { generarCodigoReserva } from "../utils/reservasStorage"
 import { formatearPrecioHabitacion, obtenerHabitaciones } from "../utils/habitacionesStorage"
-import { obtenerPerfilAPI } from "../services/authService"
-
+import { obtenerPerfilAPI} from "../services/authService";
+ 
 const reservasIniciales = [
     {
         id: 1,
@@ -31,20 +31,33 @@ function TablaReservas({ clienteId, esAdmin = false }) {
     })
     const [clientes] = useState(() => esAdmin ? obtenerClientes() : [])
     const [busqueda, setBusqueda] = useState("")
-
+ 
     const abrirFormulario = async (reserva = null) => {
         if (!esAdmin) {
             try {
-                const cliente = obtenerClientePorId(clienteId)
-                if (!cliente || cliente.activo === false) {
-                    await Swal.fire({
-                        icon: "warning",
-                        title: "Cuenta inactiva",
-                        text: "No puedes realizar reservas con una cuenta inactiva. Contacta al hotel para recibir ayuda.",
-                        confirmButtonColor: "#344c5c"
-                    })
-                    return
-                }
+               const sesion = JSON.parse(
+    sessionStorage.getItem("sesionHotel") || "null"
+);
+ 
+if (!sesion?.token) {
+    throw new Error("Debes iniciar sesión nuevamente");
+}
+ 
+const cliente = await obtenerPerfilAPI(sesion.token);
+              if (
+    !cliente ||
+    cliente.rol !== "cliente" ||
+    cliente.activo === false ||
+    cliente.activo === 0
+) {
+    await Swal.fire({
+        icon: "warning",
+        title: "Cuenta no disponible",
+        text: "No puedes realizar reservas con una cuenta inactiva.",
+        confirmButtonColor: "#344c5c"
+    });
+    return;
+}
             } catch (error) {
                 await Swal.fire({
                     icon: "error",
@@ -55,7 +68,7 @@ function TablaReservas({ clienteId, esAdmin = false }) {
                 return
             }
         }
-
+ 
         let habitaciones;
         try {
             habitaciones = obtenerHabitaciones();
@@ -68,10 +81,10 @@ function TablaReservas({ clienteId, esAdmin = false }) {
             });
             return;
         }
-
+ 
         const contenedor = document.createElement("div")
         const raiz = createRoot(contenedor)
-
+ 
         raiz.render(
             <FormularioReserva
             reserva={reserva}
@@ -86,32 +99,32 @@ function TablaReservas({ clienteId, esAdmin = false }) {
                         const sesion = JSON.parse(
                             sessionStorage.getItem("sesionHotel") || "null"
                         );
-
-                        if(!sesion?.token) {
-
-                            throw new Error("Debes iniciar sesion nuevamente") 
+ 
+                        if( !sesion?.token) {  
+ 
+                            throw new Error("Debes iniciar sesión nuevamnete ")
                         }
-
-                        const cliente = await obtenerPerfilAPI(sesion.token)
+ 
+                        const cliente = await obtenerPerfilAPI(sesion.token);
                         if (cliente.rol !== "cliente" || cliente.activo === false || cliente.activo === 0) {
-                            await Swal.fire(
-                                "Cuenta no disponible",
-                                "No puedes realizar reservas con una cuenta inactiva. Contacta al hotel para recibir ayuda.",
+                           await Swal.fire(                                
+                                 "Cuenta no disponible",
+                                 "No puedes realizar reservas con una cuenta inactiva. Contacta al hotel para recibir ayuda.",
                                 "warning"
                             );
                             return
                         }
                     } catch (error) {
-                        await Swal.fire(
+                       await Swal.fire(
                             "Error",
                             error.message || "Intenta nuevamente más tarde.",
                             "error"
-                        )
-                        return
+                       );
+                        return;
                     }
                 }
-
-                if (reserva){ 
+ 
+                if (reserva){
                     setReservas(actuales =>
                         actuales.map(r =>
                             r.id === reserva.id
@@ -119,7 +132,7 @@ function TablaReservas({ clienteId, esAdmin = false }) {
                                 : r
                         )
                     )
-
+ 
                 }else {
                 const nuevaReserva = {
                     id: generarCodigoReserva(reservas),
@@ -142,26 +155,26 @@ function TablaReservas({ clienteId, esAdmin = false }) {
     useEffect(() => {
         localStorage.setItem("reservasHotel", JSON.stringify(reservas))
     }, [reservas])
-
+ 
     const eliminarReserva = async (id) => {
         const resultado = await Swal.fire({
             title:" Eliminar reserva ?",
-            text:"Esta accion eliminara la reserva", 
+            text:"Esta accion eliminara la reserva",
             icon:"warning",
-            showCancelButton: true, 
-            confirmButtonText: "Si, eliminar", 
+            showCancelButton: true,
+            confirmButtonText: "Si, eliminar",
             confirmButtonColor: "#dc3545"
         })
-
+ 
         if (resultado.isConfirmed){
-            setReservas(actuales => 
+            setReservas(actuales =>
                 actuales.filter(reserva => reserva.id !== id )
-
+ 
             )
             Swal.fire("Reserva eliminada", )
         }
     }    
-
+ 
     const columnas = [
         {
             name: "Codigo",
@@ -232,11 +245,11 @@ function TablaReservas({ clienteId, esAdmin = false }) {
                 </div>
             )
         }
-
+ 
     ]
-
-
-
+ 
+ 
+ 
     const reservasPropias = esAdmin
         ? reservas
         : reservas.filter(reserva => reserva.clienteId === clienteId);
@@ -244,7 +257,7 @@ function TablaReservas({ clienteId, esAdmin = false }) {
         reserva.habitacion.toLowerCase().includes(busqueda.toLowerCase()) ||
         reserva.estado.toLowerCase().includes(busqueda.toLowerCase())
     )
-
+ 
     return(
         <div>
             <div className="d-flex justify-content-between mb-3 gap-2 ">
@@ -261,12 +274,12 @@ function TablaReservas({ clienteId, esAdmin = false }) {
              style={{ backgroundColor:"#344c5c" }}
              onClick={() => abrirFormulario()}
              
-             >   
+             >  
              <i className="bi bi-plus-circle me-2"></i>
              {esAdmin ? "Nueva Reserva" : "Reservar habitación"}
             </button>
               </div>
-            <DataTable 
+            <DataTable
             columns={columnas}
             data={reservasFiltradas}
             pagination
@@ -276,8 +289,8 @@ function TablaReservas({ clienteId, esAdmin = false }) {
                 ? "No se encontraron reservas"
                 : "Aún no tienes reservas. Crea una para verla aquí."}
             />
-          </div> 
+          </div>
     )
 }
-
+ 
 export default TablaReservas

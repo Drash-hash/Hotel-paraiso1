@@ -42,3 +42,5 @@ export async function actualizarHabitacionAPI(id, datos) {
 export async function desactivarHabitacionAPI(id) {
   return solicitar(`/${id}`, 'DELETE');
 }
+ 
+ 

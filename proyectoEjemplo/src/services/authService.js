@@ -18,3 +18,18 @@ async function enviarSolicitud(ruta, datos) {
  
 export const iniciarSesionAPI = (correo, password) => enviarSolicitud("/login", { correo, password });
 export const registrarClienteAPI = (datos) => enviarSolicitud("/registro", datos);
+
+export async function obtenerPerfilAPI(token) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${API_URL}/me`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  } catch {
+    throw new Error("No se pudo conectar con el servidor.");
+  }
+  const resultado = await respuesta.json().catch(() => ({}));
+  if (!respuesta.ok) throw new Error(resultado.mensaje || "No se pudo obtener el perfil.");
+  return resultado.usuario ?? resultado;
+}
