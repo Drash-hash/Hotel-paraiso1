@@ -22,7 +22,7 @@ app.use(express.json());
  
 app.use("/api/auth", authRoutes);
 app.use("/api/habitaciones", habitacionesRoutes);
-app.use("api/reservas", reservasRoutes);
+app.use("/api/reservas", reservasRoutes);
 
 app.get("/api", (req, res) =>{
     res.status(200).json({
