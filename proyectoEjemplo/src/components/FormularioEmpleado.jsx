@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { cargosEmpleado } from "../utils/empleadosStorage"
-
+ 
 function FormularioEmpleado({ empleado, guardar, cancelar }) {
     const [formulario, setFormulario] = useState({
         documento: empleado?.documento ?? "",
@@ -11,17 +11,17 @@ function FormularioEmpleado({ empleado, guardar, cancelar }) {
         password: "",
         confirmarPassword: ""
     })
-
+ 
     const manejarCambio = evento => {
         const { name, value } = evento.target
         setFormulario(actual => ({ ...actual, [name]: value }))
     }
-
+ 
     const manejarEnvio = evento => {
         evento.preventDefault()
         guardar(formulario)
     }
-
+ 
     return (
         <form onSubmit={manejarEnvio}>
             <div className="hp-empleados-form-grid">
@@ -114,17 +114,15 @@ function FormularioEmpleado({ empleado, guardar, cancelar }) {
                         minLength={8}
                         value={formulario.password}
                         onChange={manejarCambio}
-                        required={!empleado || !empleado.password}
+                        required={!empleado}
                     />
                     <small className="form-text text-secondary">
                         {empleado
-                            ? empleado.password
-                                ? "Déjala vacía para conservar la contraseña actual."
-                                : "Este empleado aún no tiene acceso; establece una contraseña para habilitarlo."
+                            ? "Déjala vacía para conservar la contraseña actual."
                             : "Mínimo 8 caracteres. El empleado usará esta contraseña para iniciar sesión."}
                     </small>
                 </div>
-                {(!empleado || !empleado.password || formulario.password) && (
+                {(!empleado || formulario.password) && (
                     <div className="mb-3">
                         <label className="form-label" htmlFor="empleado-confirmar-password">
                             Confirmar contraseña
@@ -138,12 +136,12 @@ function FormularioEmpleado({ empleado, guardar, cancelar }) {
                             minLength={8}
                             value={formulario.confirmarPassword}
                             onChange={manejarCambio}
-                            required={!empleado || !empleado.password || Boolean(formulario.password)}
+                            required={!empleado || Boolean(formulario.password)}
                         />
                     </div>
                 )}
             </div>
-
+ 
             <div className="d-flex justify-content-end gap-2">
                 <button type="button" className="btn btn-outline-secondary" onClick={cancelar}>
                     Cancelar
@@ -156,5 +154,6 @@ function FormularioEmpleado({ empleado, guardar, cancelar }) {
         </form>
     )
 }
-
+ 
 export default FormularioEmpleado
+ 

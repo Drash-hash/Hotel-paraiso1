@@ -1,42 +1,42 @@
 import { useMemo, useState } from "react"
 import Swal from "sweetalert2"
 import { formatearPrecioHabitacion } from "../utils/habitacionesStorage"
-
+ 
 function normalizarNombre(nombre = "") {
     return nombre.toLocaleLowerCase("es").replace(/\s+/g, "").trim();
 }
-
+ 
 function reservaUsaHabitacion(reserva, habitacion) {
     if (reserva.habitacionId != null) {
         return String(reserva.habitacionId) === String(habitacion.id);
     }
-
+ 
     return normalizarNombre(reserva.habitacion) === normalizarNombre(habitacion.nombre);
 }
-
+ 
 function fechasSeSuperponen(inicio, fin, reserva) {
     return inicio < reserva.salida && fin > reserva.entrada;
 }
-
+ 
 function estaDisponible(habitacion, inicio, fin, reservas, reservaEditada, permitirNoDisponible) {
     const activa = habitacion.activo !== false;
     const disponiblePorEstado = habitacion.estado === "Disponible" ||
         (permitirNoDisponible && reservaEditada && reservaUsaHabitacion(reservaEditada, habitacion));
-
+ 
     if (!activa || !disponiblePorEstado) {
         return false;
     }
-
+ 
     if (!inicio) {
         return true;
     }
-
+ 
     const finConsulta = fin && fin > inicio
         ? fin
         : new Date(new Date(`${inicio}T00:00:00`).getTime() + 86400000)
             .toISOString()
             .slice(0, 10);
-
+ 
     return !reservas.some(reserva =>
         reserva.id !== reservaEditada?.id &&
         reserva.estado !== "Cancelada" &&
@@ -46,7 +46,7 @@ function estaDisponible(habitacion, inicio, fin, reservas, reservaEditada, permi
         fechasSeSuperponen(inicio, finConsulta, reserva)
     );
 }
-
+ 
 function FormularioReserva({
     reserva,
     guardar,
@@ -67,7 +67,7 @@ function FormularioReserva({
         estado: reserva?.estado ?? "Pendiente",
         clienteId: reserva?.clienteId ?? ""
     }))
-
+ 
     const habitacionesDisponibles = useMemo(() => habitaciones.filter(habitacion =>
         estaDisponible(
             habitacion,
@@ -78,12 +78,12 @@ function FormularioReserva({
             true
         )
     ), [habitaciones, datos.entrada, datos.salida, reservas, reserva])
-
+ 
     const habitacionSeleccionada = habitacionesDisponibles.find(habitacion =>
         String(habitacion.id) === String(datos.habitacionId) ||
         (!datos.habitacionId && normalizarNombre(habitacion.nombre) === normalizarNombre(datos.habitacion))
     )
-
+ 
     const manejarCambio = (e) => {
         const { name, value } = e.target;
         setDatos(actuales => {
@@ -97,7 +97,7 @@ function FormularioReserva({
                     habitacionPrecio: habitacion?.precio ?? ""
                 };
             }
-
+ 
             const siguientesDatos = { ...actuales, [name]: value };
             if (name === "entrada" || name === "salida") {
                 const entrada = name === "entrada" ? value : actuales.entrada;
@@ -107,7 +107,7 @@ function FormularioReserva({
                     (!actuales.habitacionId &&
                         normalizarNombre(item.nombre) === normalizarNombre(actuales.habitacion))
                 );
-
+ 
                 if (habitacionActual && !estaDisponible(
                     habitacionActual,
                     entrada,
@@ -122,18 +122,18 @@ function FormularioReserva({
                     siguientesDatos.habitacionPrecio = "";
                 }
             }
-
+ 
             return siguientesDatos;
         });
     }
-
+ 
     const manejarEnvio = (e) => {
         e.preventDefault()
         if (!habitacionSeleccionada || !datos.entrada || !datos.salida){
             Swal.fire("Selecciona una habitación disponible y completa las fechas.")
             return
         }
-
+ 
         if (datos.salida <= datos.entrada){
             Swal.fire(
                 "fechas incorrectas",
@@ -165,19 +165,19 @@ function FormularioReserva({
             habitacionPrecio: Number(habitacionSeleccionada.precio),
             clienteId: esAdmin ? datos.clienteId || null : clienteId
         })
-
+ 
     }
-
+ 
     return (
         <form onSubmit={manejarEnvio}>
             <div className="mb-3">
                 <label className="form-label">Habitación</label>
-                <select 
+                <select
                 className="form-select"
                     name="habitacionId"
                     value={habitacionSeleccionada ? String(habitacionSeleccionada.id) : ""}
                 onChange={manejarCambio}
-                required       
+                required      
             >
                     <option value="">
                         {habitacionesDisponibles.length
@@ -204,7 +204,7 @@ function FormularioReserva({
                         </small>
                     )}
             </div>
-
+ 
             {esAdmin && (
                 <div className="mb-3">
                     <label className="form-label">Cliente titular</label>
@@ -223,10 +223,10 @@ function FormularioReserva({
                     </select>
                 </div>
             )}
-
+ 
             <div className="mb-3">
-               <label className="form-label">Fecha de entrada</label> 
-                <input 
+               <label className="form-label">Fecha de entrada</label>
+                <input
                 type="date"
                 className="form-control"
                 name="entrada"
@@ -235,10 +235,10 @@ function FormularioReserva({
                 required
                  />
               </div>          
-
+ 
               <div className="mb-3">
-               <label className="form-label">Fecha de salida</label> 
-                <input 
+               <label className="form-label">Fecha de salida</label>
+                <input
                 type="date"
                 className="form-control"
                 name="salida"
@@ -247,22 +247,8 @@ function FormularioReserva({
                 onChange={manejarCambio}
                 required
                  />
-
-                <div className="mb-3">
-                    <label htmlFor="" className="form-label">Estado</label>
-                    <select 
-                    className="form-select"
-                    name="estado"
-                    value={datos.estado}
-                    onChange={manejarCambio}
-                    required >
-
-                <option value="Pendiente">Pendiente</option>
-                <option value="Confirmada">Confirmada</option>
-                <option value="Cancelada">Cancelada</option>
-                    </select>
-                    
-                    </div> 
+ 
+                 
               </div>  
                 <div className="d-flex justify-content-end gap-2">
                     <button
@@ -271,21 +257,21 @@ function FormularioReserva({
                     onClick={cancelar}
                     >
                 Cancelar
-                </button> 
-
+                </button>
+ 
                       <button
                     type="submit"
                     className="btn btn-success">
                     <i className="bi bi-check-circle me-2"></i>
                     Guardar Reserva
-
-                </button> 
+ 
+                </button>
                 </div>
-              
+             
               </form>
-            
+           
            
     )
 }
-
+ 
 export default FormularioReserva
