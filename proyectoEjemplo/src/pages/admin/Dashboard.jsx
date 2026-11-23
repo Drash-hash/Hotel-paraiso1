@@ -9,6 +9,7 @@ import TablaHuespedes from '../../components/TablaHuespedes'
 import TablaEmpleados from '../../components/TablaEmpleados'
 import TablaTareas from '../../components/TablaTareas'
 import { obtenerClientes } from '../../utils/clientesStorage'
+import Reportes from '../../components/Reportes';
 
 const reservas = [
   { id: 'R-001', huesped: 'Laura Gómez', habitacion: 'Suite 201', fecha: '18/10/2026', estado: 'Confirmada' },
@@ -16,7 +17,15 @@ const reservas = [
   { id: 'R-003', huesped: 'Ana Torres', habitacion: 'Suite 203', fecha: '20/10/2026', estado: 'Confirmada' },
 ]
 
-const secciones = ['Resumen', 'Habitaciones', 'Reservas', 'Huéspedes', 'Empleados', 'Tareas']
+const secciones = [
+  'Resumen',
+  'Habitaciones',
+  'Reservas',
+  'Huéspedes',
+  'Empleados',
+  'Tareas',
+  'Reportes'
+];
 
 const estilosTablaReservas = {
   headRow: {
@@ -233,7 +242,9 @@ function Dashboard({ onLogout }) {
         ) : seccion === "Tareas" ? (
           <TablaTareas />
 
-        ): (
+        ) : seccion === "Reportes" ? (
+        <Reportes />
+        ) : (
           <section className="hp-panel hp-placeholder">
             <span className="hp-placeholder-icon">✦</span>
             <h2>Gestión de {seccion.toLowerCase()}</h2>

@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
- 
+const recuperacionRoutes = require('./auth/recuperacion.routes');
+
 const pool = require("./config/db");
  
 // cambio
@@ -14,7 +15,11 @@ const clientesRoutes = require('./clientes/clientes.routes');
 const empleadosRoutes = require('./empleados/empleados.routes');
 const tareasRoutes = require('./tareas/tareas.routes');
  
+const reportesRoutes = require('./reportes/reportes.routes');
+ 
 const app = express();
+ 
+ 
  
 app.use(helmet());
  
@@ -30,7 +35,8 @@ app.use("/api/reservas", reservasRoutes);
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/empleados', empleadosRoutes);
 app.use('/api/tareas', tareasRoutes);
- 
+app.use('/api/reportes', reportesRoutes);
+app.use('/api/recuperacion', recuperacionRoutes); 
  
 app.get("/api", (req, res) =>{
     res.status(200).json({
@@ -64,3 +70,5 @@ app.use((error, req, res, next) => {
   res.status(error.status || 500).json({ mensaje: error.status ? error.message : 'Error interno del servidor' });
 });
 module.exports = app;
+ 
+ 
