@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { solicitarRecuperacionAPI } from "../services/recuperacionService";
 import Swal from "sweetalert2";
 import { iniciarSesionAPI, registrarClienteAPI } from "../services/authService";
  
@@ -23,7 +24,7 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
         throw new Error("La respuesta del servidor no contiene una sesión válida.");
       }
       await Swal.fire({
-        icon: "success", title: `¡Bienvenido", ${resultado.usuario.nombre || "usuario"}!`,
+        icon: "success", title: `¡Bienvenido, ${resultado.usuario.nombre || "usuario"}!`,
         text: "Sesión iniciada correctamente", confirmButtonText: "Continuar",
         confirmButtonColor: "#344c5c"
       });
@@ -68,16 +69,29 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
     }
   };
  
+  const recuperar = async (e) => {
+    e.preventDefault();
+    if (procesando) return;
+    setProcesando(true);
+    try {
+      const resultado = await solicitarRecuperacionAPI(correo.trim().toLowerCase());
+      await Swal.fire({ icon: "success", title: "Solicitud procesada", text: resultado.mensaje, confirmButtonColor: "#344c5c" });
+      setModo("login");
+    } catch (error) {
+      await Swal.fire({ icon: "error", title: "Error", text: error.message });
+    } finally { setProcesando(false); }
+  };
+ 
   return (
     <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.65)" }}>
       <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div className="modal-content rounded-4 shadow">
           <div className="modal-header border-0">
-            <h4 className="modal-title fw-bold">{modo === "login" ? "Bienvenido" : "Crear cuenta"}</h4>
+            <h4 className="modal-title fw-bold">{modo === "login" ? "Bienvenido" : modo === "recuperacion" ? "Recuperar contraseña" : "Crear cuenta"}</h4>
             <button type="button" className="btn-close" onClick={cerrar} />
           </div>
           <div className="modal-body px-4 pb-4">
-            <p className="text-muted">{modo === "login" ? "Ingresa a tu cuenta del hotel" : "Regístrate para gestionar tus reservas"}</p>
+            <p className="text-muted">{modo === "login" ? "Ingresa a tu cuenta del hotel" : modo === "recuperacion" ? "Ingresa el correo asociado a tu cuenta" : "Regístrate para gestionar tus reservas"}</p>
             {modo === "login" ? (
               <form onSubmit={iniciarSesion}>
                 <div className="mb-3">
@@ -94,6 +108,12 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
                   style={{ backgroundColor: "#6b7017" }}>
                   {procesando ? "Ingresando..." : "Iniciar sesión"}
                 </button>
+              </form>
+            ) : modo === "recuperacion" ? (
+              <form onSubmit={recuperar}>
+                <label className="form-label">Correo electrónico</label>
+                <input type="email" className="form-control mb-3" value={correo} onChange={e => setCorreo(e.target.value)} required />
+                <button disabled={procesando} className="btn w-100 text-white" style={{backgroundColor: "#6b7017"}}>{procesando ? "Enviando..." : "Enviar enlace"}</button>
               </form>
             ) : (
               <form onSubmit={crearCuenta}>
@@ -128,6 +148,7 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
                 </button>
               </form>
             )}
+            {modo === "login" && <button type="button" disabled={procesando} className="btn btn-link w-100" onClick={() => { setPassword(""); setModo("recuperacion"); }}>¿Olvidaste tu contraseña?</button>}
             <p className="text-center mt-3 mb-0">
               {modo === "login" ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
               <a href="#" onClick={(e) => { e.preventDefault(); if (!procesando) setModo(modo === "login" ? "registro" : "login"); }}>
@@ -142,3 +163,5 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
 }
  
 export default LoginModal;
+ 
+ 

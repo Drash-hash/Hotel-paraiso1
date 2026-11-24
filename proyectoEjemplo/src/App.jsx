@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import RestablecerPassword from "./pages/RestablecerPassword";
 import Home from "./pages/Home";
 import Dashboard from "./pages/admin/Dashboard";
 import ClienteDashboard from "./pages/cliente/ClienteDashboard";
@@ -37,6 +38,7 @@ function App() {
  
   return (
     <Routes>
+      <Route path="/restablecer-password" element={<RestablecerPassword />} />
       <Route path="/" element={<Home onLogin={iniciarSesion} />} />
       <Route path="/admin" element={
         <ProtectedRoute sesion={sesion} rolPermitido="admin">

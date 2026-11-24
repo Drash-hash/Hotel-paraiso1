@@ -1,17 +1,15 @@
 const router = require('express').Router();
  
 const {
-
   solicitarRecuperacion,
-
   restablecerPassword
-
 } = require('./recuperacion.controller');
- 
-router.post('/solicitar', solicitarRecuperacion);
 
+
+const recuperacionLimiter = require('../middlewares/recuperacionLimiter')
+
+
+router.post('/solicitar', recuperacionLimiter, solicitarRecuperacion);
 router.post('/restablecer', restablecerPassword);
  
 module.exports = router;
-
- 
